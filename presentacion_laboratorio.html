@@ -17,6 +17,29 @@
     --text: #e8ecf5;
     --muted: #5a6080;
     --card: #10131f;
+    --nav-bg: rgba(7,8,13,0.85);
+    --grid-line: rgba(0,245,160,0.03);
+    --scanline: rgba(0,0,0,0.05);
+    --hover-glow: rgba(0,245,160,0.03);
+    --table-hover: rgba(255,255,255,0.02);
+  }
+
+  [data-theme="light"] {
+    --bg: #f5f7fc;
+    --panel: #ffffff;
+    --border: #e2e8f0;
+    --accent: #10b981;
+    --accent2: #3b82f6;
+    --accent3: #f97316;
+    --warn: #eab308;
+    --text: #1e293b;
+    --muted: #64748b;
+    --card: #ffffff;
+    --nav-bg: rgba(255,255,255,0.88);
+    --grid-line: rgba(59,130,246,0.04);
+    --scanline: rgba(0,0,0,0.015);
+    --hover-glow: rgba(59,130,246,0.04);
+    --table-hover: rgba(59,130,246,0.03);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,8 +79,8 @@
     content: '';
     position: fixed; inset: 0;
     background-image:
-      linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none; z-index: 0;
   }
@@ -68,7 +91,7 @@
     z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
     padding: 20px 48px;
-    background: rgba(7,8,13,0.85);
+    background: var(--nav-bg);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
   }
@@ -314,7 +337,7 @@
     font-size: 14px;
     transition: background 0.2s;
   }
-  .mem-table tr:hover td { background: rgba(0,245,160,0.03); }
+  .mem-table tr:hover td { background: var(--hover-glow); }
   .mem-table .level {
     font-weight: 700; color: var(--accent2);
   }
@@ -489,8 +512,8 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(0,0,0,0.05) 2px,
-      rgba(0,0,0,0.05) 4px
+      var(--scanline) 2px,
+      var(--scanline) 4px
     );
     pointer-events: none; z-index: 200;
   }
@@ -509,7 +532,7 @@
     padding: 14px 20px; border-bottom: 1px solid var(--border);
     transition: background 0.2s;
   }
-  .mode-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .mode-table tr:hover td { background: var(--table-hover); }
   .mode-normal { border-left: 2px solid var(--accent2); }
   .mode-paralelo { border-left: 2px solid var(--accent); }
   .pill {
@@ -518,6 +541,63 @@
   }
   .pill-normal { background: rgba(0,194,255,0.12); color: var(--accent2); }
   .pill-parallel { background: rgba(0,245,160,0.12); color: var(--accent); }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    margin-left: 24px;
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    transform: scale(1.1);
+  }
+
+  /* Light mode specific enhancements */
+  [data-theme="light"] body { cursor: auto; }
+  [data-theme="light"] .cursor,
+  [data-theme="light"] .cursor-ring { display: none; }
+
+  [data-theme="light"] .device-card {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  [data-theme="light"] .device-card:hover {
+    box-shadow: 0 8px 24px rgba(59,130,246,0.12);
+  }
+  [data-theme="light"] .comp-card {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  [data-theme="light"] .improve-item {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  [data-theme="light"] .improve-item:hover {
+    box-shadow: 0 8px 24px rgba(16,185,129,0.12);
+  }
+  [data-theme="light"] .jmeter-card {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  [data-theme="light"] .stat-cell::after {
+    background: linear-gradient(90deg, var(--accent2), transparent);
+  }
+  [data-theme="light"] .fps-bar-fill {
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+  [data-theme="light"] .zero-error {
+    background: rgba(16,185,129,0.1);
+  }
+  [data-theme="light"] .hero-title::after {
+    background: linear-gradient(180deg, transparent, rgba(59,130,246,0.06), transparent);
+  }
+  [data-theme="light"] nav {
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  }
 
   @media (max-width: 768px) {
     nav { padding: 16px 24px; }
@@ -535,13 +615,16 @@
 
 <nav>
   <div class="nav-logo">ARQ · COMP · 2026</div>
-  <div class="nav-links">
-    <a href="#datos">Datos</a>
-    <a href="#memoria">Memoria</a>
-    <a href="#carga">Carga</a>
-    <a href="#latencia">Latencia</a>
-    <a href="#mejoras">Mejoras</a>
-    <a href="#conclusiones">Conclusiones</a>
+  <div style="display:flex;align-items:center;">
+    <div class="nav-links">
+      <a href="#datos">Datos</a>
+      <a href="#memoria">Memoria</a>
+      <a href="#carga">Carga</a>
+      <a href="#latencia">Latencia</a>
+      <a href="#mejoras">Mejoras</a>
+      <a href="#conclusiones">Conclusiones</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Cambiar tema">🌙</button>
   </div>
 </nav>
 
@@ -1260,6 +1343,26 @@
     });
   }, { threshold: 0.3 });
   bars.forEach(b => barIO.observe(b));
+
+  // Theme toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    html.setAttribute('data-theme', savedTheme);
+    themeToggle.textContent = savedTheme === 'light' ? '☀️' : '🌙';
+  }
+  themeToggle.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    if (next === 'dark') {
+      html.removeAttribute('data-theme');
+    } else {
+      html.setAttribute('data-theme', next);
+    }
+    themeToggle.textContent = next === 'light' ? '☀️' : '🌙';
+    localStorage.setItem('theme', next);
+  });
 </script>
 </body>
 </html>
