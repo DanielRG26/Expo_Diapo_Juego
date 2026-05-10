@@ -945,27 +945,11 @@
   <div class="jmeter-grid reveal">
     <div class="jmeter-card">
       <div class="jmeter-users">20</div>
-      <div class="jmeter-label">usuarios simultáneos</div>
+      <div class="jmeter-label">usuarios</div>
       <div class="jmeter-stat"><span class="ms">2 ms</span> promedio</div>
       <div class="jmeter-stat"><span class="ms">1 ms</span> mínimo</div>
       <div class="jmeter-stat"><span class="ms">24 ms</span> máximo</div>
       <div><span class="zero-error">0.00% error</span></div>
-    </div>
-    <div class="jmeter-card">
-      <div class="jmeter-users">40</div>
-      <div class="jmeter-label">usuarios simultáneos</div>
-      <div class="jmeter-stat"><span class="ms">2 ms</span> promedio</div>
-      <div class="jmeter-stat"><span class="ms">1 ms</span> mínimo</div>
-      <div class="jmeter-stat"><span class="ms">6 ms</span> máximo</div>
-      <div><span class="zero-error">0.00% error</span></div>
-    </div>
-    <div class="jmeter-card" style="border-color:var(--accent);">
-      <div class="jmeter-users" style="color:var(--accent)">60</div>
-      <div class="jmeter-label">usuarios simultáneos</div>
-      <div class="jmeter-stat"><span class="ms">2 ms</span> promedio</div>
-      <div class="jmeter-stat"><span class="ms">1 ms</span> mínimo</div>
-      <div class="jmeter-stat"><span class="ms">6 ms</span> máximo</div>
-      <div><span class="zero-error" style="color:var(--accent)">0.00% error · PICO</span></div>
     </div>
   </div>
 
@@ -999,8 +983,8 @@
     <!-- Tarjetas resumen -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:24px;">
       <div style="background:var(--card);border:1px solid var(--border);padding:20px;text-align:center;">
-        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent2);">60</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Usuarios Máx.</div>
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent2);">20</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Usuarios</div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);padding:20px;text-align:center;">
         <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent);">2 ms</div>
@@ -1110,7 +1094,7 @@
     function generateLatencyData() {
       const avgData = [];
       const maxData = [];
-      // PRUEBA 1: 20 usuarios (0-60s)
+      // 20 usuarios (0-60s)
       for (let t = 0; t <= 60; t += 1) {
         let avg = 2;
         let max;
@@ -1124,30 +1108,6 @@
         avgData.push({ x: t, y: avg + (Math.random() * 0.4 - 0.2) });
         maxData.push({ x: t, y: max });
       }
-      // PRUEBA 2: 40 usuarios (60-120s)
-      for (let t = 61; t <= 120; t += 1) {
-        let avg = 2;
-        let max;
-        if (t === 61) max = 6;
-        else if (t === 62) max = 5;
-        else if (t === 63) max = 4;
-        else if (t <= 66) max = 3 + Math.random() * 0.5;
-        else max = 2 + Math.random() * 1.2;
-        avgData.push({ x: t, y: avg + (Math.random() * 0.3 - 0.15) });
-        maxData.push({ x: t, y: max });
-      }
-      // PRUEBA 3: 60 usuarios (120-180s)
-      for (let t = 121; t <= 180; t += 1) {
-        let avg = 2;
-        let max;
-        if (t === 121) max = 6;
-        else if (t === 122) max = 5;
-        else if (t === 123) max = 4;
-        else if (t <= 126) max = 3 + Math.random() * 0.5;
-        else max = 2 + Math.random() * 1;
-        avgData.push({ x: t, y: avg + (Math.random() * 0.3 - 0.15) });
-        maxData.push({ x: t, y: max });
-      }
       return { avgData, maxData };
     }
 
@@ -1157,34 +1117,16 @@
       id: 'zonePlugin',
       beforeDraw(chart) {
         const { ctx, chartArea: { left, right, top, bottom }, scales: { x } } = chart;
-        const zones = [
-          { start: 0, end: 60, color: 'rgba(0,194,255,0.05)', label: '20 usuarios' },
-          { start: 60, end: 120, color: 'rgba(0,245,160,0.05)', label: '40 usuarios' },
-          { start: 120, end: 180, color: 'rgba(255,107,53,0.05)', label: '60 usuarios' }
-        ];
-        zones.forEach(zone => {
-          const xStart = x.getPixelForValue(zone.start);
-          const xEnd = x.getPixelForValue(zone.end);
-          ctx.save();
-          ctx.fillStyle = zone.color;
-          ctx.fillRect(xStart, top, xEnd - xStart, bottom - top);
-          ctx.fillStyle = '#5a6080';
-          ctx.font = 'bold 11px Space Mono, monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(zone.label, (xStart + xEnd) / 2, top + 16);
-          ctx.restore();
-        });
-        [60, 120].forEach(val => {
-          const xPos = x.getPixelForValue(val);
-          ctx.save();
-          ctx.strokeStyle = '#1a1f35';
-          ctx.setLineDash([4, 4]);
-          ctx.beginPath();
-          ctx.moveTo(xPos, top);
-          ctx.lineTo(xPos, bottom);
-          ctx.stroke();
-          ctx.restore();
-        });
+        const xStart = x.getPixelForValue(0);
+        const xEnd = x.getPixelForValue(60);
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,194,255,0.05)';
+        ctx.fillRect(xStart, top, xEnd - xStart, bottom - top);
+        ctx.fillStyle = '#5a6080';
+        ctx.font = 'bold 11px Space Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('20 usuarios', (xStart + xEnd) / 2, top + 16);
+        ctx.restore();
       }
     };
 
@@ -1245,8 +1187,7 @@
               callbacks: {
                 title: function(items) {
                   const t = items[0].parsed.x;
-                  let fase = t <= 60 ? 'Prueba 1 (20 usuarios)' : t <= 120 ? 'Prueba 2 (40 usuarios)' : 'Prueba 3 (60 usuarios)';
-                  return fase + ' — t = ' + t + 's';
+                  return '20 usuarios — t = ' + t + 's';
                 },
                 label: function(context) {
                   return ' ' + context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' ms';
@@ -1256,9 +1197,9 @@
           },
           scales: {
             x: {
-              type: 'linear', min: 0, max: 180,
+              type: 'linear', min: 0, max: 60,
               title: { display: true, text: 'Tiempo (segundos)', font: { size: 12, weight: 'bold' }, color: '#5a6080' },
-              ticks: { stepSize: 10, callback: function(val) { return val + 's'; }, color: '#5a6080', font: { size: 10 } },
+              ticks: { stepSize: 5, callback: function(val) { return val + 's'; }, color: '#5a6080', font: { size: 10 } },
               grid: { color: 'rgba(26,31,53,0.8)' }
             },
             y: {
