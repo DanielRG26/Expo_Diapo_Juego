@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio · Verificación de Arquitectura Computacional</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080d;
+    --panel: #0d0f1a;
+    --border: #1a1f35;
+    --accent: #00f5a0;
+    --accent2: #00c2ff;
+    --accent3: #ff6b35;
+    --warn: #ffce00;
+    --text: #e8ecf5;
+    --muted: #5a6080;
+    --card: #10131f;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: exclusion;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent2);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transition: all 0.18s ease;
+    mix-blend-mode: exclusion;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(7,8,13,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-size: 12px; letter-spacing: 0.08em;
+    color: var(--muted); text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* SECTIONS */
+  section {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    padding: 120px 48px 80px;
+    display: flex; flex-direction: column;
+    justify-content: center;
+  }
+
+  /* HERO */
+  #hero {
+    padding-top: 140px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0; animation: fadeUp 0.6s 0.2s forwards;
+  }
+  .hero-title {
+    font-size: clamp(42px, 7vw, 96px);
+    font-weight: 800; line-height: 0.95;
+    letter-spacing: -0.03em;
+    max-width: 900px;
+    opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
+  }
+  .hero-title .accent { color: var(--accent); }
+  .hero-title .accent2 { color: var(--accent2); }
+  .hero-meta {
+    display: flex; gap: 48px; margin-top: 48px;
+    opacity: 0; animation: fadeUp 0.7s 0.7s forwards;
+  }
+  .meta-item label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    display: block; margin-bottom: 6px;
+  }
+  .meta-item span { font-size: 14px; font-weight: 600; }
+  .hero-scroll {
+    position: absolute; bottom: 40px; left: 48px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.15em;
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0; animation: fadeUp 0.7s 1s forwards;
+  }
+  .hero-scroll::before {
+    content: '';
+    width: 40px; height: 1px; background: var(--muted);
+  }
+
+  /* BIG NUMBER STRIP */
+  .stats-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 60px 0;
+    opacity: 0; animation: fadeUp 0.7s 0.9s forwards;
+  }
+  .stat-cell {
+    padding: 32px 24px;
+    border-right: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-cell::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .stat-cell:hover::after { transform: scaleX(1); }
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 48px; font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-num.blue { color: var(--accent2); }
+  .stat-num.orange { color: var(--accent3); }
+  .stat-num.yellow { color: var(--warn); }
+  .stat-label {
+    font-size: 12px; color: var(--muted);
+    margin-top: 8px; letter-spacing: 0.05em;
+  }
+
+  /* SECTION HEADERS */
+  .section-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--accent2);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-eyebrow::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent2);
+  }
+  .section-title {
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 800; line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 48px;
+  }
+
+  /* DEVICE TABLE */
+  .device-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2px;
+    margin-top: 32px;
+  }
+  .device-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+    overflow: hidden;
+  }
+  .device-card:hover {
+    border-color: var(--accent2);
+    transform: translateY(-2px);
+  }
+  .device-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .device-card:hover::before { transform: scaleX(1); }
+  .device-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid;
+    display: inline-block; margin-bottom: 16px;
+    border-radius: 2px;
+  }
+  .badge-pc { color: var(--accent2); border-color: var(--accent2); }
+  .badge-mobile { color: var(--accent); border-color: var(--accent); }
+  .device-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .device-cpu { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .fps-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-end; margin-top: 12px;
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .fps-block label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.1em; display: block; margin-bottom: 4px;
+  }
+  .fps-block .val {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px; font-weight: 700;
+  }
+  .fps-val { color: var(--accent); }
+  .heap-val { color: var(--warn); }
+  .fps-bar-wrap {
+    flex: 1; margin: 0 16px; margin-bottom: 4px;
+  }
+  .fps-bar-track {
+    height: 4px; background: var(--border); border-radius: 2px;
+    overflow: hidden;
+  }
+  .fps-bar-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+    width: 0;
+  }
+
+  /* COMPARISON SECTION */
+  .comparison-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .comp-card {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 32px; position: relative;
+  }
+  .comp-title {
+    font-size: 14px; font-weight: 700; margin-bottom: 6px;
+    color: var(--accent2);
+  }
+  .comp-diff {
+    font-family: 'Space Mono', monospace;
+    font-size: 48px; font-weight: 700; color: var(--accent3);
+    line-height: 1; margin-bottom: 8px;
+  }
+  .comp-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .winner-tag {
+    position: absolute; top: 20px; right: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 0.12em;
+    color: var(--accent); border: 1px solid var(--accent);
+    padding: 4px 8px; text-transform: uppercase;
+  }
+
+  /* MEMORY TABLE */
+  .mem-table {
+    width: 100%; border-collapse: collapse;
+    margin-top: 32px;
+  }
+  .mem-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 16px 20px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .mem-table td {
+    padding: 20px; border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .mem-table tr:hover td { background: rgba(0,245,160,0.03); }
+  .mem-table .level {
+    font-weight: 700; color: var(--accent2);
+  }
+  .mem-table .impact {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+  }
+  .high { color: var(--accent3); }
+  .med { color: var(--warn); }
+  .low { color: var(--accent); }
+
+  /* IMPROVEMENTS */
+  .improve-list {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px; margin-top: 32px;
+  }
+  .improve-item {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 36px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .improve-item:hover { border-color: var(--accent); }
+  .improve-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 64px; font-weight: 700;
+    color: var(--border);
+    position: absolute; right: 24px; bottom: -8px;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+  .improve-item:hover .improve-num { color: rgba(0,245,160,0.06); }
+  .improve-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .improve-title {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 12px; line-height: 1.2;
+  }
+  .improve-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* LOAD TEST */
+  .jmeter-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2px; margin-top: 32px;
+  }
+  .jmeter-card {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 32px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .jmeter-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 0, rgba(0,245,160,0.04), transparent 70%);
+    pointer-events: none;
+  }
+  .jmeter-users {
+    font-family: 'Space Mono', monospace;
+    font-size: 56px; font-weight: 700;
+    color: var(--accent2); line-height: 1;
+  }
+  .jmeter-label { font-size: 11px; color: var(--muted); margin: 8px 0 20px; }
+  .jmeter-stat { margin: 8px 0; }
+  .jmeter-stat span {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+  }
+  .jmeter-stat .ok { color: var(--accent); }
+  .jmeter-stat .ms { color: var(--warn); }
+  .zero-error {
+    display: inline-block;
+    background: rgba(0,245,160,0.1);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 0.1em;
+    padding: 6px 14px; margin-top: 16px;
+  }
+
+  /* CONCLUSIONS */
+  .conclusion-list {
+    list-style: none; margin-top: 40px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .conclusion-list li {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 28px 32px;
+    display: flex; gap: 24px; align-items: flex-start;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .conclusion-list li:hover {
+    border-color: var(--accent2);
+    transform: translateX(4px);
+  }
+  .c-icon {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; color: var(--accent);
+    min-width: 28px; padding-top: 2px;
+  }
+  .c-text { font-size: 15px; line-height: 1.6; color: var(--text); }
+  .c-text strong { color: var(--accent2); }
+
+  /* FOOTER */
+  footer {
+    padding: 48px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .footer-left {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    line-height: 1.8;
+  }
+  .footer-right {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--muted);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* GLITCH on hero title */
+  @keyframes glitch {
+    0%  { clip-path: inset(0 0 95% 0); transform: translate(-2px, 0); }
+    10% { clip-path: inset(30% 0 55% 0); transform: translate(2px, 0); }
+    20% { clip-path: inset(60% 0 10% 0); transform: translate(-1px, 0); }
+    30% { clip-path: inset(80% 0 2% 0); transform: translate(0px, 0); }
+    40% { clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+    100%{ clip-path: inset(0 0 0 0); transform: translate(0, 0); }
+  }
+  .hero-title::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0;
+    color: var(--accent2);
+    animation: glitch 4s infinite 2s;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .hero-title { position: relative; }
+
+  /* Scanline overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.05) 2px,
+      rgba(0,0,0,0.05) 4px
+    );
+    pointer-events: none; z-index: 200;
+  }
+
+  /* Mode normal vs paralelo table */
+  .mode-table {
+    width: 100%; border-collapse: collapse; margin-top: 32px;
+    font-family: 'Space Mono', monospace; font-size: 13px;
+  }
+  .mode-table th {
+    text-align: left; padding: 14px 20px;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--border);
+  }
+  .mode-table td {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .mode-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .mode-normal { border-left: 2px solid var(--accent2); }
+  .mode-paralelo { border-left: 2px solid var(--accent); }
+  .pill {
+    display: inline-block; padding: 3px 10px;
+    font-size: 10px; border-radius: 2px;
+  }
+  .pill-normal { background: rgba(0,194,255,0.12); color: var(--accent2); }
+  .pill-parallel { background: rgba(0,245,160,0.12); color: var(--accent); }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    section { padding: 100px 24px 60px; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+    .comparison-grid, .improve-list, .jmeter-grid { grid-template-columns: 1fr; }
+    .hero-meta { flex-wrap: wrap; gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <div class="nav-logo">ARQ · COMP · 2026</div>
+  <div class="nav-links">
+    <a href="#datos">Datos</a>
+    <a href="#memoria">Memoria</a>
+    <a href="#carga">Carga</a>
+    <a href="#mejoras">Mejoras</a>
+    <a href="#conclusiones">Conclusiones</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-tag">Universidad Cooperativa de Colombia · Ingeniería de Software</div>
+  <h1 class="hero-title" data-text="Laboratorio de Verificación de Arquitectura Computacional">
+    Laboratorio de<br>
+    <span class="accent">Verificación</span><br>
+    de <span class="accent2">Arquitectura</span><br>
+    Computacional
+  </h1>
+
+  <div class="stats-strip">
+    <div class="stat-cell">
+      <div class="stat-num" data-target="6">0</div>
+      <div class="stat-label">Dispositivos evaluados</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num blue" data-target="144">0</div>
+      <div class="stat-label">FPS máximos registrados</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num orange" data-target="99">0</div>
+      <div class="stat-label">Heap Memory pico (MB)</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num yellow" data-target="0">0%</div>
+      <div class="stat-label">Tasa de error JMeter (60 usuarios)</div>
+    </div>
+  </div>
+
+  <div class="hero-meta">
+    <div class="meta-item">
+      <label>Proyecto</label>
+      <span>GameMemoriaVirtual · React + Three.js</span>
+    </div>
+    <div class="meta-item">
+      <label>Mg. Docente</label>
+      <span>Gustavo Sánchez Rodríguez</span>
+    </div>
+    <div class="meta-item">
+      <label>Fecha</label>
+      <span>18 de Abril de 2026</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll">scroll para explorar</div>
+</section>
+
+<!-- DATOS POR DISPOSITIVO -->
+<section id="datos">
+  <div class="section-eyebrow">Resultados por dispositivo</div>
+  <h2 class="section-title reveal">Rendimiento CISC vs RISC</h2>
+
+  <div class="device-grid reveal">
+
+    <div class="device-card">
+      <span class="device-badge badge-pc">PC · CISC</span>
+      <div class="device-name">EdbenPC — HP</div>
+      <div class="device-cpu">AMD Ryzen 7 Series 7000 · 16 GB RAM</div>
+      <div class="fps-row">
+        <div class="fps-block">
+          <label>FPS inicial</label>
+          <div class="val fps-val">60</div>
+        </div>
+        <div class="fps-bar-wrap">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;">FPS con 1000 bloques</div>
+          <div class="fps-bar-track"><div class="fps-bar-fill" data-w="12"></div></div>
+        </div>
+        <div class="fps-block">
+          <label>FPS carga</label>
+          <div class="val" style="color:var(--accent3)">17</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Heap 1000 bloques: <span style="color:var(--warn)">92.85 MB</span></div>
+    </div>
+
+    <div class="device-card">
+      <span class="device-badge badge-pc">PC · CISC</span>
+      <div class="device-name">PC 2 — Gigabyte</div>
+      <div class="device-cpu">AMD Ryzen 7 5700G · 16 GB DDR4 3200</div>
+      <div class="fps-row">
+        <div class="fps-block">
+          <label>FPS inicial</label>
+          <div class="val fps-val">139</div>
+        </div>
+        <div class="fps-bar-wrap">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;">FPS con 1000 bloques</div>
+          <div class="fps-bar-track"><div class="fps-bar-fill" data-w="26"></div></div>
+        </div>
+        <div class="fps-block">
+          <label>FPS carga</label>
+          <div class="val" style="color:var(--accent3)">38</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Heap 1000 bloques: <span style="color:var(--warn)">68.23 MB</span></div>
+    </div>
+
+    <div class="device-card">
+      <span class="device-badge badge-pc">PC · CISC</span>
+      <div class="device-name">PC 3 — Acer Nitro V15</div>
+      <div class="device-cpu">AMD Ryzen 7 7000 Series · 16 GB · 512 GB</div>
+      <div class="fps-row">
+        <div class="fps-block">
+          <label>FPS inicial</label>
+          <div class="val fps-val">59</div>
+        </div>
+        <div class="fps-bar-wrap">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;">FPS con 1000 bloques</div>
+          <div class="fps-bar-track"><div class="fps-bar-fill" data-w="9"></div></div>
+        </div>
+        <div class="fps-block">
+          <label>FPS carga</label>
+          <div class="val" style="color:var(--accent3)">13</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Heap 1000 bloques: <span style="color:var(--warn)">82.80 MB</span></div>
+    </div>
+
+    <div class="device-card">
+      <span class="device-badge badge-mobile">Móvil · RISC</span>
+      <div class="device-name">Samsung Galaxy S8+</div>
+      <div class="device-cpu">Exynos 8895 Octa-core 2.3 GHz · 4 GB LPDDR4</div>
+      <div class="fps-row">
+        <div class="fps-block">
+          <label>FPS inicial</label>
+          <div class="val fps-val">60</div>
+        </div>
+        <div class="fps-bar-wrap">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;">FPS con 1000 bloques</div>
+          <div class="fps-bar-track"><div class="fps-bar-fill" data-w="8"></div></div>
+        </div>
+        <div class="fps-block">
+          <label>FPS carga</label>
+          <div class="val" style="color:var(--accent3)">11</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Heap 1000 bloques: <span style="color:var(--warn)">87.58 MB</span></div>
+    </div>
+
+    <div class="device-card">
+      <span class="device-badge badge-mobile">Móvil · RISC</span>
+      <div class="device-name">iPhone 14 Pro Max</div>
+      <div class="device-cpu">Apple A16 Bionic · 6 GB · iOS 15</div>
+      <div class="fps-row">
+        <div class="fps-block">
+          <label>FPS inicial</label>
+          <div class="val fps-val">144</div>
+        </div>
+        <div class="fps-bar-wrap">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;">FPS con 1000 bloques</div>
+          <div class="fps-bar-track"><div class="fps-bar-fill" data-w="14"></div></div>
+        </div>
+        <div class="fps-block">
+          <label>FPS carga</label>
+          <div class="val" style="color:var(--accent3)">20</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Heap 1000 bloques: <span style="color:var(--warn)">84.24 MB</span></div>
+    </div>
+
+    <div class="device-card" style="border-color:var(--accent);">
+      <span class="device-badge badge-mobile">Móvil · RISC ⭐</span>
+      <div class="device-name">iPhone 12 Pro</div>
+      <div class="device-cpu">Apple A14 Bionic · 6 GB · iOS 14</div>
+      <div class="fps-row">
+        <div class="fps-block">
+          <label>FPS inicial</label>
+          <div class="val fps-val">144</div>
+        </div>
+        <div class="fps-bar-wrap">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;">FPS con 1000 bloques</div>
+          <div class="fps-bar-track"><div class="fps-bar-fill" data-w="60"></div></div>
+        </div>
+        <div class="fps-block">
+          <label>FPS carga</label>
+          <div class="val fps-val">86</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted)">Heap 1000 bloques: <span style="color:var(--warn)">71.08 MB</span> · <span style="color:var(--accent)">Mejor rendimiento global</span></div>
+    </div>
+
+  </div>
+
+  <!-- Comparativas -->
+  <div style="margin-top: 64px;" class="reveal">
+    <div class="section-eyebrow">Análisis comparativo</div>
+    <h2 class="section-title" style="font-size:clamp(24px,3vw,40px)">Diferencias de rendimiento</h2>
+  </div>
+
+  <div class="comparison-grid reveal">
+    <div class="comp-card">
+      <div class="comp-title">PC 1 vs PC 2</div>
+      <div class="comp-diff">123%</div>
+      <div class="comp-desc">PC2 mantiene significativamente más FPS y gestiona la memoria de forma más eficiente. EdbenPC presenta una caída fuerte al agregar bloques (+115% de heap vs +46% PC2).</div>
+      <div class="winner-tag">PC2 GANA</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">PC 2 vs PC 3</div>
+      <div class="comp-diff">192%</div>
+      <div class="comp-desc">La mayor diferencia entre PCs. PC3 pierde el 78% de sus FPS bajo carga. PC2 es el PC con mejor equilibrio rendimiento/memoria (+46% heap vs +95% PC3).</div>
+      <div class="winner-tag">PC2 GANA</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-title">Samsung vs iPhone 14</div>
+      <div class="comp-diff">82%</div>
+      <div class="comp-desc">iPhone 14 Pro Max mantiene mejor estabilidad de FPS y controla mejor el heap (+38% vs +121% del Samsung). La arquitectura A16 Bionic muestra clara ventaja.</div>
+      <div class="winner-tag">iPHONE 14 GANA</div>
+    </div>
+    <div class="comp-card" style="border-color: var(--accent);">
+      <div class="comp-title">Mejor PC vs Mejor Móvil</div>
+      <div class="comp-diff" style="color:var(--accent)">125%</div>
+      <div class="comp-desc">El iPhone 12 Pro supera al mejor PC en estabilidad de FPS bajo carga (86 FPS vs 38) y tiene menor incremento de heap (+25% vs +46%), demostrando la eficiencia RISC.</div>
+      <div class="winner-tag" style="color:var(--accent);border-color:var(--accent)">iPHONE 12 GANA</div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMORIA -->
+<section id="memoria">
+  <div class="section-eyebrow">Análisis de la jerarquía</div>
+  <h2 class="section-title reveal">Impacto por tipo de memoria</h2>
+
+  <table class="mem-table reveal">
+    <thead>
+      <tr>
+        <th>Nivel</th>
+        <th>Qué se observó</th>
+        <th>Evidencia medida</th>
+        <th>Impacto</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="level">Registros del procesador</td>
+        <td>Microlags durante la adición masiva de bloques. Más visibles en dispositivos con FPS inestable.</td>
+        <td>Micro-caídas de FPS en capturas</td>
+        <td class="impact med">MEDIO</td>
+      </tr>
+      <tr>
+        <td class="level">Memoria Caché</td>
+        <td>Al volver a ingresar al juego o repetir acciones, las cargas eran notablemente más rápidas.</td>
+        <td>Tiempo de carga reducido en reentradas</td>
+        <td class="impact low">BAJO</td>
+      </tr>
+      <tr>
+        <td class="level">RAM (Heap Memory)</td>
+        <td>Impacto más crítico. Al agregar 1000 bloques el Heap aumentó en todos los dispositivos. En algunos casos no volvió a valores iniciales.</td>
+        <td>43 MB → 92 MB (EdbenPC)<br>56 MB → 99 MB (iPhone 12, cancelar)</td>
+        <td class="impact high">ALTO</td>
+      </tr>
+      <tr>
+        <td class="level">Almacenamiento Secundario</td>
+        <td>Flujo constante y normal en disco. Dispositivos más antiguos mostraron un pequeño retraso al iniciar.</td>
+        <td>Tiempo de carga inicial</td>
+        <td class="impact low">BAJO</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Normal vs Paralelo -->
+  <div style="margin-top: 64px;" class="reveal">
+    <div class="section-eyebrow">Modo de ejecución</div>
+    <h2 class="section-title" style="font-size:clamp(24px,3vw,40px)">Normal vs Paralelo (Web Workers)</h2>
+  </div>
+
+  <table class="mode-table reveal">
+    <thead>
+      <tr>
+        <th>Modo</th>
+        <th>Bloques</th>
+        <th>FPS prom.</th>
+        <th>Heap JS (MB)</th>
+        <th>Tiempo (ms)</th>
+        <th>Microlags</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="mode-normal">
+        <td><span class="pill pill-normal">Normal</span></td>
+        <td>500</td><td>51</td><td>56.79</td><td>8,000</td><td>Mínimo</td>
+      </tr>
+      <tr class="mode-normal">
+        <td><span class="pill pill-normal">Normal</span></td>
+        <td>1000</td><td style="color:var(--accent3)">16</td><td>127.15</td><td>8,000</td><td>Notable</td>
+      </tr>
+      <tr class="mode-normal">
+        <td><span class="pill pill-normal">Normal</span></td>
+        <td>2000</td><td style="color:var(--accent3)">1</td><td>180.04</td><td>16,000</td><td>Alto</td>
+      </tr>
+      <tr class="mode-paralelo">
+        <td><span class="pill pill-parallel">Paralelo</span></td>
+        <td>500</td><td>40</td><td>81.20</td><td style="color:var(--accent)">6,000</td><td>Mínimo</td>
+      </tr>
+      <tr class="mode-paralelo">
+        <td><span class="pill pill-parallel">Paralelo</span></td>
+        <td>1000</td><td>16</td><td style="color:var(--accent)">90.12</td><td style="color:var(--accent)">6,000</td><td>Notable</td>
+      </tr>
+      <tr class="mode-paralelo">
+        <td><span class="pill pill-parallel">Paralelo</span></td>
+        <td>2000</td><td>2</td><td>294.52</td><td style="color:var(--accent)">10,000</td><td>Máximo</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="reveal" style="margin-top:24px; padding:24px; background:var(--card); border:1px solid var(--border);">
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);margin-bottom:8px;">▶ CONCLUSIÓN DE MODO</div>
+    <p style="font-size:14px;color:var(--muted);line-height:1.7;">El modo paralelo es <strong style="color:var(--text)">más rápido en tiempo de procesamiento</strong> pero genera más presión en heap. El modo normal conserva mejor los FPS iniciales con menos carga. Ninguno elimina los microlags bajo alta carga de objetos.</p>
+  </div>
+</section>
+
+<!-- CARGA JMETER -->
+<section id="carga">
+  <div class="section-eyebrow">Pruebas de carga</div>
+  <h2 class="section-title reveal">Apache JMeter · Concurrencia</h2>
+
+  <div class="jmeter-grid reveal">
+    <div class="jmeter-card">
+      <div class="jmeter-users">20</div>
+      <div class="jmeter-label">usuarios simultáneos</div>
+      <div class="jmeter-stat"><span class="ms">2 ms</span> promedio</div>
+      <div class="jmeter-stat"><span class="ms">1 ms</span> mínimo</div>
+      <div class="jmeter-stat"><span class="ms">24 ms</span> máximo</div>
+      <div><span class="zero-error">0.00% error</span></div>
+    </div>
+    <div class="jmeter-card">
+      <div class="jmeter-users">40</div>
+      <div class="jmeter-label">usuarios simultáneos</div>
+      <div class="jmeter-stat"><span class="ms">2 ms</span> promedio</div>
+      <div class="jmeter-stat"><span class="ms">1 ms</span> mínimo</div>
+      <div class="jmeter-stat"><span class="ms">6 ms</span> máximo</div>
+      <div><span class="zero-error">0.00% error</span></div>
+    </div>
+    <div class="jmeter-card" style="border-color:var(--accent);">
+      <div class="jmeter-users" style="color:var(--accent)">60</div>
+      <div class="jmeter-label">usuarios simultáneos</div>
+      <div class="jmeter-stat"><span class="ms">2 ms</span> promedio</div>
+      <div class="jmeter-stat"><span class="ms">1 ms</span> mínimo</div>
+      <div class="jmeter-stat"><span class="ms">6 ms</span> máximo</div>
+      <div><span class="zero-error" style="color:var(--accent)">0.00% error · PICO</span></div>
+    </div>
+  </div>
+
+  <div class="reveal" style="margin-top:32px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;">
+      <div style="background:var(--card);border:1px solid var(--border);padding:28px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;">CPU PICO · JMETER 60</div>
+        <div style="font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:var(--accent3)">22.6%</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">Sistema funcionando con margen</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);padding:28px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;">RAM USADA · BASELINE</div>
+        <div style="font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:var(--accent2)">11 GB</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">de 16 GB disponibles (17% CPU)</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);padding:28px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;">RAM · 1000 BLOQUES</div>
+        <div style="font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:var(--warn)">12.6 GB</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">de 16 GB · carga del sistema</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEJORAS -->
+<section id="mejoras">
+  <div class="section-eyebrow">Propuestas de optimización</div>
+  <h2 class="section-title reveal">4 mejoras concretas</h2>
+
+  <div class="improve-list reveal">
+
+    <div class="improve-item">
+      <div class="improve-tag">Propuesta 01 · Three.js</div>
+      <div class="improve-title">LOD + Frustum Culling + Instancing</div>
+      <div class="improve-desc">Implementar Level of Detail para reducir complejidad geométrica a distancia. Combinar con frustum culling para no renderizar objetos fuera del campo visual e instancing para agrupar objetos repetidos en una sola llamada. Impacto directo en FPS y Heap bajo carga de 1000+ bloques.</div>
+      <div class="improve-num">01</div>
+    </div>
+
+    <div class="improve-item">
+      <div class="improve-tag">Propuesta 02 · Memoria</div>
+      <div class="improve-title">Object Pooling para reducir Heap</div>
+      <div class="improve-desc">El Garbage Collection actúa con retraso; algunos dispositivos mantienen el Heap elevado incluso al cancelar la partida. Implementar un sistema de object pooling que reutilice los objetos Three.js en lugar de crear/destruir constantemente, reduciendo la presión sobre el GC.</div>
+      <div class="improve-num">02</div>
+    </div>
+
+    <div class="improve-item">
+      <div class="improve-tag">Propuesta 03 · Backend</div>
+      <div class="improve-title">Nginx + Compresión Gzip</div>
+      <div class="improve-desc">Con 60 usuarios el tiempo de respuesta ya empieza a notarse. Implementar un balanceador de carga básico con Nginx frente al servidor Vite en producción, junto con compresión gzip de assets estáticos, reduciría el tiempo de transferencia y distribuiría mejor la carga concurrente.</div>
+      <div class="improve-num">03</div>
+    </div>
+
+    <div class="improve-item">
+      <div class="improve-tag">Propuesta 04 · Adaptativo</div>
+      <div class="improve-title">Loader adaptativo por capacidades del navegador</div>
+      <div class="improve-desc">Usar renderer.capabilities de Three.js para detectar soporte de WebGL 2.0 vs 1.0 al iniciar. Cargar automáticamente una versión del escenario con mayor o menor resolución de texturas y complejidad geométrica según el entorno. Especialmente útil para móviles con Safari o Chrome de gama baja.</div>
+      <div class="improve-num">04</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONCLUSIONES -->
+<section id="conclusiones">
+  <div class="section-eyebrow">Hallazgos del grupo</div>
+  <h2 class="section-title reveal">Conclusiones</h2>
+
+  <ul class="conclusion-list reveal">
+    <li>
+      <div class="c-icon">→</div>
+      <div class="c-text">El nivel de mayor impacto fue claramente la <strong>RAM</strong>. El Heap Memory subió considerablemente en todos los dispositivos al pasar de estado inicial a 1000 bloques activos, siendo más notorio en el iPhone 12 Pro que llegó a 99 MB al cancelar partida — el Garbage Collection no liberó todo de forma inmediata.</div>
+    </li>
+    <li>
+      <div class="c-icon">→</div>
+      <div class="c-text">La diferencia entre arquitecturas <strong>CISC y RISC</strong> fue más evidente en la gestión dinámica de memoria que en el renderizado. Los móviles aguantaron bien en FPS pero mostraron más tensión en el Heap, consecuencia de que los procesadores móviles priorizan eficiencia energética sobre capacidad de procesamiento sostenido.</div>
+    </li>
+    <li>
+      <div class="c-icon">→</div>
+      <div class="c-text"><strong>Grafana + Prometheus</strong> fueron esenciales para dar contexto completo. JMeter mostraba tiempos del servidor, los indicadores del juego mostraban FPS y Heap, pero cruzar ambos con métricas de CPU y RAM del host permitió identificar cuándo el sistema realmente estaba al límite.</div>
+    </li>
+    <li>
+      <div class="c-icon">→</div>
+      <div class="c-text">El <strong>iPhone 12 Pro superó al mejor PC</strong> (PC2 Gigabyte) en estabilidad de FPS bajo carga (86 vs 38 FPS) y tuvo menor incremento de heap (+25.8% vs +45.8%), demostrando que la arquitectura RISC de Apple Silicon ofrece rendimiento excepcional en aplicaciones 3D web.</div>
+    </li>
+    <li>
+      <div class="c-icon">→</div>
+      <div class="c-text">El rendimiento de una aplicación no depende de una sola cosa. Es la suma del <strong>hardware, la arquitectura del software, la gestión de memoria y el monitoreo en conjunto</strong>. Este laboratorio evidenció cada uno de esos factores con números reales, no solo con teoría.</div>
+    </li>
+  </ul>
+</section>
+
+<footer>
+  <div class="footer-left">
+    John Sebastián Ceballos Beltrán<br>
+    Juan Manuel Córdoba Florez<br>
+    Edwar Alexander Benito Basante<br>
+    Daniel Felipe Guevara
+  </div>
+  <div class="footer-right">
+    Universidad Cooperativa de Colombia<br>
+    Arquitectura Computacional · 2026
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top  = my - 6 + 'px';
+  });
+  function animRing() {
+    rx += (mx - rx - 18) * 0.12;
+    ry += (my - ry - 18) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        e.target.style.transitionDelay = (i % 4) * 0.08 + 's';
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => io.observe(r));
+
+  // Animate big numbers
+  function animNum(el, target, suffix='') {
+    let start = null;
+    const dur = 1800;
+    function step(ts) {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - p, 4);
+      el.textContent = Math.round(ease * target) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  const numEls = document.querySelectorAll('.stat-num[data-target]');
+  const numIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const target = parseInt(e.target.dataset.target);
+        const suffix = e.target.dataset.target === '0' ? '%' : '';
+        animNum(e.target, target, suffix);
+        numIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  numEls.forEach(n => numIO.observe(n));
+
+  // Animate FPS bars
+  const bars = document.querySelectorAll('.fps-bar-fill');
+  const barIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.width = e.target.dataset.w + '%';
+        barIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  bars.forEach(b => barIO.observe(b));
+</script>
+</body>
+</html>
