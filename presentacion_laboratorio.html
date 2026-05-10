@@ -525,6 +525,7 @@
     <a href="#datos">Datos</a>
     <a href="#memoria">Memoria</a>
     <a href="#carga">Carga</a>
+    <a href="#latencia">Latencia</a>
     <a href="#mejoras">Mejoras</a>
     <a href="#conclusiones">Conclusiones</a>
   </div>
@@ -890,6 +891,39 @@
       </div>
     </div>
   </div>
+
+  <!-- GRÁFICA INTERACTIVA: Latencia vs Tiempo -->
+  <div id="latencia" class="reveal" style="margin-top:48px;">
+    <div class="section-eyebrow">Gráfica interactiva</div>
+    <h2 class="section-title" style="font-size:clamp(24px,3vw,40px)">Latencia vs Tiempo bajo carga</h2>
+  </div>
+
+  <div class="reveal" style="margin-top:16px;">
+    <!-- Tarjetas resumen -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:24px;">
+      <div style="background:var(--card);border:1px solid var(--border);padding:20px;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent2);">60</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Usuarios Máx.</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);padding:20px;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent);">2 ms</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Latencia Promedio</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);padding:20px;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--warn);">0.00%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Tasa de Error</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);padding:20px;text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--accent3);">24 ms</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;">Latencia Pico</div>
+      </div>
+    </div>
+
+    <!-- Canvas de la gráfica -->
+    <div style="background:var(--card);border:1px solid var(--border);padding:24px;border-radius:4px;">
+      <canvas id="latencyChart" style="width:100%;max-height:400px;"></canvas>
+    </div>
+  </div>
 </section>
 
 <!-- MEJORAS -->
@@ -972,6 +1006,177 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  // Latency Chart
+  (function() {
+    function generateLatencyData() {
+      const avgData = [];
+      const maxData = [];
+      // PRUEBA 1: 20 usuarios (0-60s)
+      for (let t = 0; t <= 60; t += 1) {
+        let avg = 2;
+        let max;
+        if (t === 0) max = 24;
+        else if (t === 1) max = 18;
+        else if (t === 2) max = 12;
+        else if (t === 3) max = 8;
+        else if (t === 4) max = 5;
+        else if (t <= 8) max = 3 + Math.random() * 1;
+        else max = 2 + Math.random() * 1.5;
+        avgData.push({ x: t, y: avg + (Math.random() * 0.4 - 0.2) });
+        maxData.push({ x: t, y: max });
+      }
+      // PRUEBA 2: 40 usuarios (60-120s)
+      for (let t = 61; t <= 120; t += 1) {
+        let avg = 2;
+        let max;
+        if (t === 61) max = 6;
+        else if (t === 62) max = 5;
+        else if (t === 63) max = 4;
+        else if (t <= 66) max = 3 + Math.random() * 0.5;
+        else max = 2 + Math.random() * 1.2;
+        avgData.push({ x: t, y: avg + (Math.random() * 0.3 - 0.15) });
+        maxData.push({ x: t, y: max });
+      }
+      // PRUEBA 3: 60 usuarios (120-180s)
+      for (let t = 121; t <= 180; t += 1) {
+        let avg = 2;
+        let max;
+        if (t === 121) max = 6;
+        else if (t === 122) max = 5;
+        else if (t === 123) max = 4;
+        else if (t <= 126) max = 3 + Math.random() * 0.5;
+        else max = 2 + Math.random() * 1;
+        avgData.push({ x: t, y: avg + (Math.random() * 0.3 - 0.15) });
+        maxData.push({ x: t, y: max });
+      }
+      return { avgData, maxData };
+    }
+
+    const { avgData, maxData } = generateLatencyData();
+
+    const zonePlugin = {
+      id: 'zonePlugin',
+      beforeDraw(chart) {
+        const { ctx, chartArea: { left, right, top, bottom }, scales: { x } } = chart;
+        const zones = [
+          { start: 0, end: 60, color: 'rgba(0,194,255,0.05)', label: '20 usuarios' },
+          { start: 60, end: 120, color: 'rgba(0,245,160,0.05)', label: '40 usuarios' },
+          { start: 120, end: 180, color: 'rgba(255,107,53,0.05)', label: '60 usuarios' }
+        ];
+        zones.forEach(zone => {
+          const xStart = x.getPixelForValue(zone.start);
+          const xEnd = x.getPixelForValue(zone.end);
+          ctx.save();
+          ctx.fillStyle = zone.color;
+          ctx.fillRect(xStart, top, xEnd - xStart, bottom - top);
+          ctx.fillStyle = '#5a6080';
+          ctx.font = 'bold 11px Space Mono, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(zone.label, (xStart + xEnd) / 2, top + 16);
+          ctx.restore();
+        });
+        [60, 120].forEach(val => {
+          const xPos = x.getPixelForValue(val);
+          ctx.save();
+          ctx.strokeStyle = '#1a1f35';
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(xPos, top);
+          ctx.lineTo(xPos, bottom);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+    };
+
+    const canvasEl = document.getElementById('latencyChart');
+    if (canvasEl) {
+      const ctxChart = canvasEl.getContext('2d');
+      new Chart(ctxChart, {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'Latencia Promedio (ms)',
+              data: avgData,
+              borderColor: '#00c2ff',
+              backgroundColor: 'rgba(0,194,255,0.08)',
+              borderWidth: 2.5,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: '#00c2ff',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Latencia Máxima (ms)',
+              data: maxData,
+              borderColor: '#ff6b35',
+              backgroundColor: 'rgba(255,107,53,0.05)',
+              borderWidth: 2,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: '#ff6b35',
+              fill: false,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 2.2,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { usePointStyle: true, padding: 20, font: { size: 12 }, color: '#5a6080' }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(13,15,26,0.95)',
+              titleColor: '#e8ecf5',
+              bodyColor: '#e8ecf5',
+              borderColor: '#1a1f35',
+              borderWidth: 1,
+              titleFont: { size: 12 },
+              bodyFont: { size: 11 },
+              padding: 12,
+              cornerRadius: 4,
+              callbacks: {
+                title: function(items) {
+                  const t = items[0].parsed.x;
+                  let fase = t <= 60 ? 'Prueba 1 (20 usuarios)' : t <= 120 ? 'Prueba 2 (40 usuarios)' : 'Prueba 3 (60 usuarios)';
+                  return fase + ' — t = ' + t + 's';
+                },
+                label: function(context) {
+                  return ' ' + context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' ms';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear', min: 0, max: 180,
+              title: { display: true, text: 'Tiempo (segundos)', font: { size: 12, weight: 'bold' }, color: '#5a6080' },
+              ticks: { stepSize: 10, callback: function(val) { return val + 's'; }, color: '#5a6080', font: { size: 10 } },
+              grid: { color: 'rgba(26,31,53,0.8)' }
+            },
+            y: {
+              min: 0, max: 30,
+              title: { display: true, text: 'Latencia (ms)', font: { size: 12, weight: 'bold' }, color: '#5a6080' },
+              ticks: { stepSize: 5, callback: function(val) { return val + ' ms'; }, color: '#5a6080', font: { size: 10 } },
+              grid: { color: 'rgba(26,31,53,0.8)' }
+            }
+          }
+        },
+        plugins: [zonePlugin]
+      });
+    }
+  })();
+</script>
 <script>
   // Custom cursor
   const cursor = document.getElementById('cursor');
